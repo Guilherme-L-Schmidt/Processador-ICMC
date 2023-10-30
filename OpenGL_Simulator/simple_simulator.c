@@ -26,7 +26,7 @@ typedef struct _resultadoUla{
 // Processa dados do Arquivo MIF
 void le_arquivo(char arquivo[]);
 
-// Processa uma linha completa e retorna o número codificado
+// Processa uma linha completa e retorna o nï¿½mero codificado
 int processa_linha(char* linha); 
 
 // Funcao que separa somente o pedaco de interesse do IR;
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 	int key=0;    // Le Teclado
 	int IR=0, MAR=0, rx=0, ry=0, rz=0, COND=0, DATA_OUT=0;
 	int M1=0, M2=0, M3=0, M4=0, M5=0, M6=0;
-	int carry=0;// Flag do IR que indica se a ULA vai fazer operação com carry ou não 
+	int carry=0;  // Flag do IR que indica se a ULA vai fazer operacao com carry ou nao 
 	int opcode=0;
 	int temp=0;
 	unsigned char state=0; // reset
@@ -236,7 +236,7 @@ loop:
 					state=STATE_FETCH;
 					break;
 
-				case LOADIMED:
+				case LOADN:
 					// reg[rx] = mem[PC];
 					// PC++;
 					selM1 = sPC;
@@ -259,7 +259,7 @@ loop:
 					state=STATE_EXECUTE;
 					break;
 
-				case LOADINDEX:
+				case LOADI:
 					// reg[rx] = MEMORY[reg[ry]];
 					selM4 = ry;
 					selM1 = sM4;
@@ -281,7 +281,7 @@ loop:
 					state=STATE_EXECUTE;
 					break;
 
-				case STOREINDEX:
+				case STOREI:
 					//mem[reg[rx]] = reg[ry];
 					selM4 = rx;
 					selM1 = sM4;
@@ -316,13 +316,118 @@ loop:
 					break;
 
 				case ADD:
+
+					selM3 = ry;
+					selM4 = rz;
+					OP = ADD;
+					carry = IR%2;
+					selM2 = sULA;
+					LoadReg[rx] = 1;
+					selM6 = sULA;
+					LoadFR = 1;
+					
+					// -----------------------------
+					state=STATE_FETCH;
+					break;
+
 				case SUB:
+
+					selM3 = ry;
+					selM4 = rz;
+					OP = SUB;
+					selM2 = sULA;
+					LoadReg[rx] = 1;
+					selM6 = sULA;
+					LoadFR = 1;
+
+					// -----------------------------
+					state=STATE_FETCH;
+					break;
+
 				case MULT:
+
+					selM3 = ry;
+					selM4 = rz;
+					OP = MULT;
+					selM2 = sULA;
+					LoadReg[rx] = 1;
+					selM6 = sULA;
+					LoadFR = 1;
+
+					// -----------------------------
+					state=STATE_FETCH;
+					break;
+
 				case DIV:
+
+					selM3 = ry;
+					selM4 = rz;
+					OP = DIV;
+					selM2 = sULA;
+					LoadReg[rx] = 1;
+					selM6 = sULA;
+					LoadFR = 1;
+
+					// -----------------------------
+					state=STATE_FETCH;
+					break;
+
 				case LMOD:
+
+					selM3 = ry;
+					selM4 = rz;
+					OP = LMOD;
+					selM2 = sULA;
+					LoadReg[rx] = 1;
+					selM6 = sULA;
+					LoadFR = 1;
+
+					// -----------------------------
+					state=STATE_FETCH;
+					break;
+
 				case LAND:
+
+					selM3 = ry;
+					selM4 = rz;
+					OP = LAND;
+					selM2 = sULA;
+					LoadReg[rx] = 1;
+					selM6 = sULA;
+					LoadFR = 1;
+
+					// -----------------------------
+					state=STATE_FETCH;
+					break;
+
 				case LOR:
+
+					selM3 = ry;
+					selM4 = rz;
+					OP = LOR;
+					selM2 = sULA;
+					LoadReg[rx] = 1;
+					selM6 = sULA;
+					LoadFR = 1;
+
+					// -----------------------------
+					state=STATE_FETCH;
+					break;
+
 				case LXOR:
+
+					selM3 = ry;
+					selM4 = rz;
+					OP = LXOR;
+					selM2 = sULA;
+					LoadReg[rx] = 1;
+					selM6 = sULA;
+					LoadFR = 1;
+
+					// -----------------------------
+					state=STATE_FETCH;
+					break;
+
 				case LNOT:
 					// reg[rx] = reg[ry] + reg[rz]; // Soma ou outra operacao
 					selM3 = ry;
@@ -586,10 +691,10 @@ loop:
 
 		case STATE_HALTED:
 			//printf("\n");
-			goto fim;
-			//key = getchar();
-			//if (key == 'r') goto inicio;
-			//if (key == 'q') goto fim;
+			//goto fim;
+			key = getchar();
+			if (key == 'r') goto inicio;
+			if (key == 'q') goto fim;
 			break;
 
 		default:
@@ -608,7 +713,7 @@ loop:
 
 	if(M1 > (TAMANHO_MEMORIA)) {
 		M1 = 0;
-		//printf("  \n\nUltrapassou limite da memoria, coloque um jmp no fim do código\n");
+		//printf("  \n\nUltrapassou limite da memoria, coloque um jmp no fim do cï¿½digo\n");
 		exit(1);
 	}
 
@@ -617,7 +722,7 @@ loop:
 
 	// Selecao do Mux3  --> Tem que vir antes da ULA e do M5
 	// Converte o vetor FR para int
-	// TODO talvez fazer isso depois da operação da ula?
+	// TODO talvez fazer isso depois da operaï¿½ï¿½o da ula?
 	temp = 0;
 	for(i=16; i--; )        
 		temp = temp + (int) (FR[i] * (pow(2.0,i))); 
@@ -710,7 +815,7 @@ void le_arquivo(char arquivo[]){
 	fclose(stream);  // Nunca esqueca um arquivo aberto!!
 }
 
-//processa uma linha completa e retorna o número codificado
+//processa uma linha completa e retorna o nï¿½mero codificado
 //retorna -1 em caso de erro
 //NOTA: Assume radix=BIN no arquivo CPURAM.MIF
 int processa_linha(char* linha) {

@@ -248,7 +248,7 @@ void curses_draw_top_bar_window(estado_da_maquina_curses estado)
 		posX = i%regPerLine*sizeTextReg;
 		posY = i/regPerLine+1;
 		// Limpa valor antigo
-		mvwprintw(topBar, posY, posX, "          ", i, estado.reg[i]);
+		mvwprintw(topBar, posY, posX, "          ");
 		// Imprime valor novo
 		mvwprintw(topBar, posY, posX, "R%d:%d", i, estado.reg[i]);
 	}
@@ -377,7 +377,7 @@ void curses_draw_code_window(estado_da_maquina_curses estado)
 	for(int y=3; y<maxY; y++){
 		int temp = 1;
 		int curr_inst = pega_pedaco(estado.memoria[estado.PC], 15, 10); 
-		if(curr_inst == STORE || curr_inst == LOAD || curr_inst == LOADIMED || curr_inst == JMP || curr_inst == CALL)
+		if(curr_inst == STORE || curr_inst == LOAD || curr_inst == LOADN || curr_inst == JMP || curr_inst == CALL)
 			temp = 2;
 		show_program(codeWindow, y, estado);
 		estado.PC+=temp;
@@ -423,7 +423,7 @@ void show_program(WINDOW* codeWindow,int y, estado_da_maquina_curses estado)
             mvwprintw(codeWindow,y,x, "PC: %05d  |  STORE %05d, R%d      |   MEM[%d] <- R%d ", pc, estado.memoria[pc+1], rx, estado.memoria[pc+1], rx);
             break;
 
-        case STOREINDEX:
+        case STOREI:
             mvwprintw(codeWindow,y,x, "PC: %05d  |  STOREI R%d, R%d        |   MEM[R%d] <- R%d ", pc, rx, ry, rx, ry);
             break;
 
@@ -431,11 +431,11 @@ void show_program(WINDOW* codeWindow,int y, estado_da_maquina_curses estado)
             mvwprintw(codeWindow,y,x, "PC: %05d  |  LOAD R%d, %05d       |   R%d <- MEM[%d] ", pc, rx, estado.memoria[pc+1], rx, estado.memoria[pc+1]);
             break;
 
-        case LOADIMED:
+        case LOADN:
             mvwprintw(codeWindow,y,x, "PC: %05d  |  LOADN R%d, #%05d     |   R%d <- #%d ", pc, rx, estado.memoria[pc+1], rx, estado.memoria[pc+1]);
             break;
 
-        case LOADINDEX:
+        case LOADI:
             mvwprintw(codeWindow,y,x, "PC: %05d  |  LOADI R%d, R%d         |   R%d <- MEM[R%d] ", pc, rx, ry, rx, ry);
             break;
 
@@ -566,7 +566,7 @@ void show_program(WINDOW* codeWindow,int y, estado_da_maquina_curses estado)
             break;
 
         case LMOD:
-            mvwprintw(codeWindow,y,x, "PC: %05d  |  MOD R%d, R%d, R%d       |   R%d <- R%d % R%d ", pc, rx, ry, rz, rx, ry, rz);
+            mvwprintw(codeWindow,y,x, "PC: %05d  |  MOD R%d, R%d, R%d       |   R%d <- R%d mod R%d ", pc, rx, ry, rz, rx, ry, rz);
             break;
 
         case INC:
@@ -580,17 +580,17 @@ void show_program(WINDOW* codeWindow,int y, estado_da_maquina_curses estado)
 
         case SHIFT:
             if(pega_pedaco(ir,6,4)==0) // SHIFT LEFT 0
-                mvwprintw(codeWindow,y,x, "PC: %05d  |  SHIFTL0 R%d, #%02d      |   R%d <-'0'  << %d ", pc, rx, pega_pedaco(ir,3,0), rx, pega_pedaco(ir,3,0));
+                mvwprintw(codeWindow,y,x, "PC: %05d  |  SHIFTL0 R%d, #%02d      |   R%d <- '0'  << %d ", pc, rx, pega_pedaco(ir,3,0), rx, pega_pedaco(ir,3,0));
             if(pega_pedaco(ir,6,4)==1) // SHIFT LEFT 1
-                mvwprintw(codeWindow,y,x, "PC: %05d  |  SHIFTL1 R%d, #%02d      |   R%d <-'1'  << %d ", pc, rx, pega_pedaco(ir,3,0), rx, pega_pedaco(ir,3,0));
+                mvwprintw(codeWindow,y,x, "PC: %05d  |  SHIFTL1 R%d, #%02d      |   R%d <- '1'  << %d ", pc, rx, pega_pedaco(ir,3,0), rx, pega_pedaco(ir,3,0));
             if(pega_pedaco(ir,6,4)==2) // SHIFT RIGHT 0
-                mvwprintw(codeWindow,y,x, "PC: %05d  |  SHIFTR0 R%d, #%02d      |   '0'-> R%d   >> %d ", pc, rx, pega_pedaco(ir,3,0), rx, pega_pedaco(ir,3,0));
+                mvwprintw(codeWindow,y,x, "PC: %05d  |  SHIFTR0 R%d, #%02d      |   '0' -> R%d  >> %d ", pc, rx, pega_pedaco(ir,3,0), rx, pega_pedaco(ir,3,0));
             if(pega_pedaco(ir,6,4)==3) // SHIFT RIGHT 1
-                mvwprintw(codeWindow,y,x, "PC: %05d  |  SHIFTR1 R%d, #%02d      |   '1'-> R%d   >> %d ", pc, rx, pega_pedaco(ir,3,0), rx, pega_pedaco(ir,3,0));
+                mvwprintw(codeWindow,y,x, "PC: %05d  |  SHIFTR1 R%d, #%02d      |   '1' -> R%d  >> %d ", pc, rx, pega_pedaco(ir,3,0), rx, pega_pedaco(ir,3,0));
             if(pega_pedaco(ir,6,5)==2) // ROTATE LEFT
-                mvwprintw(codeWindow,y,x, "PC: %05d  |  ROTL R%d, #%02d         |   R%d <- R%d   << %d ", pc, rx, pega_pedaco(ir,3,0), rx, pega_pedaco(ir,3,0));
+                mvwprintw(codeWindow,y,x, "PC: %05d  |  ROTL R%d, #%02d         |   R%d <- R%d  << %d ", pc, rx, pega_pedaco(ir,3,0), rx, rx, pega_pedaco(ir,3,0));
             if(pega_pedaco(ir,6,5)==3) // ROTATE RIGHT
-                mvwprintw(codeWindow,y,x, "PC: %05d  |  ROTR R%d, #%02d         |   R%d -> R%d   >> %d ", pc, rx, pega_pedaco(ir,3,0), rx, pega_pedaco(ir,3,0));
+                mvwprintw(codeWindow,y,x, "PC: %05d  |  ROTR R%d, #%02d         |   R%d -> R%d  >> %d ", pc, rx, pega_pedaco(ir,3,0), rx, rx, pega_pedaco(ir,3,0));
 
             break;
 

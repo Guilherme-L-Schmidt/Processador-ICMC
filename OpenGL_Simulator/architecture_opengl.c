@@ -5,6 +5,7 @@
 //---------------------------------------------------
 
 #include "architecture_opengl.h"
+#define __USE_MISC 1
 #include <math.h>
 #include <time.h>
 
@@ -594,12 +595,12 @@ void openGL_draw_mux_paths()
 	// Desenha caminhos para os 8 registros
 	for(int r=0;r<qtyRegisters;r++)
 	{
-		if(r>0)
+		if(r>0) {
 			if(r<=loadRegister)
 				openGL_draw_path(x-totalWidth/2+dist*(r-1), 0.90, x-totalWidth/2+dist*r, 0.9, 'y');
 			else
 				openGL_draw_path(x-totalWidth/2+dist*(r-1), 0.90, x-totalWidth/2+dist*r, 0.9, 'n');
-
+		}
 		if(r==loadRegister)
 		{
 			openGL_draw_path_arrow(x-totalWidth/2+dist*r, 0.90, x-totalWidth/2+dist*r, y+size/2, 'y');
