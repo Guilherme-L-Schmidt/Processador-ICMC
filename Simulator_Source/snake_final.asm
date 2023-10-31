@@ -588,7 +588,8 @@ constroiCenario:
 		loadn r1, #0
 		loadn r2, #1200
 						; Um loop percorre todo o vetor que constitui o cenрrio inicial declarado como 'muro'
-loop1:	cmp r1,r2
+loop1:	
+		cmp r1,r2
 		jeq fimcenario
 		loadi r3,r0
 		outchar r3,r1
@@ -4000,3 +4001,5 @@ static comida + #1034, #1155
 static comida + #1035, #1156
 static comida + #1036, #1157
 static comida + #1037, #1158
+
+rts

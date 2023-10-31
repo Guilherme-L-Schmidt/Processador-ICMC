@@ -88,7 +88,7 @@ class View : public Instrucoes, public Registradores, public Video
 
 		void _draw_pixmap(cairo_t *cr, int offset, int x, int y, int size, int color);
 
-		static gboolean ViewerExpose(GtkWidget *widget, GdkEventExpose *event, gpointer data);
+		static gboolean draw(GtkWidget *self, cairo_t *cr, gpointer data);
 
 		// ----- Instrucoes -------
 		void updateInstrucoes(unsigned int atual, unsigned int proxima, unsigned int linhas); 
