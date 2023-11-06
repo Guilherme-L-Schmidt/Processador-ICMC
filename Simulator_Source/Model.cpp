@@ -19,13 +19,14 @@ void* processaAutomatico(void *data)
 			contador = 0;
 		}
 	}
-	model->updateAll();
+	g_thread_exit(g_thread_self());
+	//model->updateAll();
 	
 	return NULL;
 }
 
-void Model::updateAll()
-{	Ins->updateInstrucoes(auxpc, pc2, N_LINHAS);		// termina imprimindo o resultado
+void Model::updateAll() {
+	Ins->updateInstrucoes(auxpc, pc2, N_LINHAS);		// termina imprimindo o resultado
 	Reg->updateRegistradores();	// e atualizando os registradores
 	Reg->updateFR();
 	Reg->updatePC();
@@ -62,6 +63,8 @@ Model::Model(char *cpuram, char *charmap) {
 
 	block = (pixblock*) malloc( sizeof(pixblock) * 1200 );
 	resetVideo();
+
+	loopThread = NULL;
 }
 
 Model::~Model() { free(block); }
@@ -173,26 +176,15 @@ bool Model::getProcessamento() { return automatico; }
 void Model::processa() {
 	if(automatico) {
 		GError *error = NULL;
-
-		/* mexi ontem para ver se a velocidade aumentava
-		int i;
-		for(i=20; i--; )
-		{
-			if(!g_thread_create(processaAutomatico, this, TRUE, &error))
-			{	g_printerr ("Failed to create YES thread: %s\n", error->message);
-				return;
-			}
-		}
-		//*/
-
-		if(!g_thread_try_new(NULL, processaAutomatico, this, &error)) {
+		
+		if(!(loopThread = g_thread_try_new("graph", processaAutomatico, this, &error))) {
 			g_printerr ("Failed to create YES thread: %s\n", error->message);
 			return;
 		}
-
-		updateAll();
+		//updateAll();
 		return;
 	}
+	g_thread_join(loopThread);
 	processador(); // executa soh uma vez
 	updateAll();
 }
@@ -439,8 +431,8 @@ void Model::processador() {
   // ----- Ciclo de Busca: --------
 	ir = mem[pc];
 
-	if(pc > 32767)
-	{ printf("Ultrapassou limite da memoria, coloque um jmp no fim do código\n");
+	if(pc > 32767) {
+		printf("Ultrapassou limite da memoria, coloque um jmp no fim do código\n");
 		exit(1);
 	}
 	pc++;
@@ -458,7 +450,7 @@ void Model::processador() {
 	switch(opcode) {
 		case INCHAR:
 					//timeout(9999);    // tempo que espera pelo getch()
-			key = controller->getKey();//getch();
+			key = controller->getKey(); //getch();
 			//timeout(0);    		// tempo que espera pelo getch()
 			reg[rx] = pega_pedaco(key,7,0);
 

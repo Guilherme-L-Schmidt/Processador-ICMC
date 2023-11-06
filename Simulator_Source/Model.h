@@ -56,6 +56,9 @@ class Model : public ModelInterface
 		// -- Video ---
 		pixblock *block;
 
+		// -- Thread --
+		GThread *loopThread;
+
 
 	public:
 		Model(char *cpuram, char *charmap);

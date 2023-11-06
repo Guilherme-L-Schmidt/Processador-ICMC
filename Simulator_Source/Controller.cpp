@@ -140,8 +140,8 @@ void Controller::setRegistradorHex(bool valor) {
 bool Controller::getHex() { return hex; }
 
 void Controller::switchExecucao() {
-	automatico = 1 - automatico;
-
+	automatico = !automatico;
+	
 	if(automatico) {
 		view->TravaRegs();
 		model->setProcessamento(true);
@@ -149,8 +149,8 @@ void Controller::switchExecucao() {
 		return;
 	}
 
-	view->DestravaRegs();
 	model->setProcessamento(false);
+	view->DestravaRegs();
 }
 
 void Controller::notifyProcessamento() {

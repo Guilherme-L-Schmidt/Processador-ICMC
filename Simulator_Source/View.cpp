@@ -50,7 +50,7 @@ View::View(ModelInterface *model, ControllerInterface *controller) {
 	gtk_box_pack_start (GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
 	criarLabelsInferior(vbox);
 
-  gtk_container_add(GTK_CONTAINER(window), vbox);
+  	gtk_container_add(GTK_CONTAINER(window), vbox);
 
 	gtk_widget_show_all(window);
 }
@@ -154,7 +154,7 @@ void View::_draw_pixmap(cairo_t *cr, int offset, int x, int y, int size, int col
 			if(chars[i+offset][j]) {
 				cairo_set_source_rgb(cr, R, G, B);
 				cairo_rectangle(cr, (size*j)+x, (size*i)+y, size, size);
-	    	  cairo_fill(cr);
+	    		cairo_fill(cr);
 			}
     	}
 	}
@@ -167,7 +167,7 @@ void View::updateInstrucoes(unsigned int atual, unsigned int proxima, unsigned i
 }
 
 void View::escrever_na_tela(const char *string, int linha, int size) {
-	if(gtk_text_buffer_get_line_count(buffer) < linha) {
+	if(gtk_text_buffer_get_line_count(buffer) <= linha) {
 		g_print("Erro tentou escrever na linha %d e o maximo é %d\n", linha, gtk_text_buffer_get_line_count(buffer));
 		return;
 	}
@@ -176,21 +176,17 @@ void View::escrever_na_tela(const char *string, int linha, int size) {
 
 	gtk_text_buffer_get_iter_at_line(buffer, &iterInicio, linha);
 	gtk_text_buffer_get_iter_at_line(buffer, &iterFim, linha);
-	gtk_text_iter_forward_to_line_end (&iterFim);
+	gtk_text_iter_forward_to_line_end(&iterFim);
 
 	gtk_text_buffer_delete(buffer, &iterInicio, &iterFim);
 
-	gtk_text_buffer_insert (buffer, &iterInicio, string, strlen(string));
-
+	gtk_text_buffer_insert(buffer, &iterInicio, string, strlen(string));
+	
 	gtk_text_buffer_get_iter_at_line(buffer, &iterInicio, linha);
 	gtk_text_buffer_get_iter_at_line(buffer, &iterFim, linha);
-	gtk_text_iter_forward_to_line_end (&iterFim);
+	gtk_text_iter_forward_to_line_end(&iterFim);
 
-	if(size) {
-		gtk_text_buffer_apply_tag_by_name (buffer, "Fonte", &iterInicio, &iterFim);
-		return;
-	}
-	gtk_text_buffer_apply_tag_by_name (buffer, "Fonte2", &iterInicio, &iterFim);
+	gtk_text_buffer_apply_tag_by_name(buffer, "Fonte", &iterInicio, &iterFim);
 }
 
 void View::Imprime(unsigned int atual, unsigned int proxima, unsigned int linhas) {
@@ -218,131 +214,129 @@ void View::show_program(int linha, int pc, int sp) {
 
 	char texto[128];
 
-  switch(model->pega_pedaco(ir,15,10)) {
-	case INCHAR: 	sprintf(texto, "PC: %05d\t|	INCHAR R%d			|	R%d        <- teclado", 			pc, _rx, _rx);		 			 break;
-	case OUTCHAR:	sprintf(texto, "PC: %05d\t|	OUTCHAR R%d, R%d	|	video[R%d] <- char[R%d]", pc, _rx, _ry, _rx, _ry); break;
-    case MOV:
-		switch(model->pega_pedaco(ir,1,0)) {
-			case 0:  sprintf(texto,"PC: %05d\t|	MOV R%d, R%d			|	R%d <- R%d", 	pc, _rx, _ry, _rx, _ry); break;
-			case 1:  sprintf(texto,"PC: %05d\t|	MOV R%d, SP				|	R%d <- SP", 	pc, _rx, _rx); 				   break;
-			default: sprintf(texto,"PC: %05d\t|	MOV SP, R%d				|	SP  <- R%d", 	pc, _rx, _rx);					 break;
-		}
-		break;
-
-    case STORE:		 sprintf(texto,"PC: %05d\t|	STORE %05d, R%d	|	MEM[%d] <- R%d", 		pc, model->getMem(pc+1), _rx, model->getMem(pc+1), _rx); break;
-    case STOREINDEX: sprintf(texto,"PC: %05d\t|	STOREI R%d, R%d		|	MEM[R%d] <- R%d", pc, _rx, _ry, _rx, _ry); 						 break;
-
-    case LOAD: 		 sprintf(texto,"PC: %05d\t|	LOAD R%d, %05d		|	R%d <- MEM[%d]", 	pc, _rx, model->getMem(pc+1), _rx, model->getMem(pc+1)); 	break;
-    case LOADIMED: 	 sprintf(texto,"PC: %05d\t|	LOADN R%d, #%05d	|	R%d <- #%d", 			pc, _rx, model->getMem(pc+1), _rx, model->getMem(pc+1)); 	break;
-    case LOADINDEX:	 sprintf(texto,"PC: %05d\t|	LOADI R%d, R%d		|	R%d <- MEM[R%d]", pc, _rx, _ry, _rx, _ry); 							break;
-
-    case LAND:		 sprintf(texto,"PC: %05d\t|	AND R%d, R%d, R%d		|	R%d <- R%d and R%d", 	pc, _rx, _ry, _rz, _rx, _ry, _rz);	break;
-    case LOR:	 	 sprintf(texto,"PC: %05d\t|	OR R%d, R%d, R%d		|	R%d <- R%d or R%d", 	pc, _rx, _ry, _rz, _rx, _ry, _rz); 	break;
-    case LXOR: 		 sprintf(texto,"PC: %05d\t|	XOR R%d, R%d, R%d		|	R%d <- R%d xor R%d", 	pc, _rx, _ry, _rz, _rx, _ry, _rz);  break;
-    case LNOT: 		 sprintf(texto,"PC: %05d\t|	NOT R%d, R%d			|	R%d <- R%d", 						pc, _rx, _ry, _rx, _ry); 						break;
-
-    case CMP:		 sprintf(texto,"PC: %05d\t|	CMP R%d, R%d			|	FR <- <eq|le|gr>", 			pc, _rx, _ry); break;
-
-    case JMP:
-		switch(model->pega_pedaco(ir,9,6)) {
-			case 0:	 sprintf(texto, "PC: %05d\t|	JMP #%05d 		|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
-			case 1:	 sprintf(texto, "PC: %05d\t|	JEQ #%05d 		|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
-			case 2:	 sprintf(texto, "PC: %05d\t|	JNE #%05d 		|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
-			case 3:  sprintf(texto, "PC: %05d\t|	JZ  #%05d			|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
-			case 4:  sprintf(texto, "PC: %05d\t|	JNZ #%05d 		|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
-			case 5:  sprintf(texto, "PC: %05d\t|	JC  #%05d			|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
-			case 6:  sprintf(texto, "PC: %05d\t|	JNC #%05d 		|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
-			case 7:  sprintf(texto, "PC: %05d\t|	JGR #%05d 		|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
-			case 8:  sprintf(texto, "PC: %05d\t|	JLE #%05d 		|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
-			case 9:  sprintf(texto, "PC: %05d\t|	JEG #%05d 		|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
-			case 10: sprintf(texto, "PC: %05d\t|	JEL #%05d 		|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
-			case 11: sprintf(texto, "PC: %05d\t|	JOV #%05d 		|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
-			case 12: sprintf(texto, "PC: %05d\t|	JNO #%05d 		|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
-			case 13: sprintf(texto, "PC: %05d\t|	JDZ #%05d 		|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
-			case 14: sprintf(texto, "PC: %05d\t|	JN  #%05d			|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
-			default: printf("Erro. Instrucao inesperada em show_program"); break;
-		}
-		break;
-
-    case PUSH:
-    	if(!model->pega_pedaco(ir,6,6)) {// Registrador
-			sprintf(texto, "PC: %05d\t|	PUSH R%d			|	MEM[%d] <- R%d]", pc, _rx, sp, _rx); 
-			break; 
-		}
-		sprintf(texto, "PC: %05d\t|	PUSH FR			|	MEM[%d] <- FR]", pc, sp); // FR
-      	break;
-
-    case POP:
-    	if(!model->pega_pedaco(ir,6,6)) { // Registrador
-			sprintf(texto, "PC: %05d\t|	POP R%d				|	R%d <- MEM[%d]", pc, _rx, _rx, sp); 
-			break; 
-		}
-		sprintf(texto, "PC: %05d\t|	POP FR			|	FR <- MEM[%d]", pc, sp); // FR
-        break;
-
-    case CALL:
-		switch(model->pega_pedaco(ir,9,6)) {
-			case 0:  sprintf(texto, "PC: %05d\t|	CALL #%05d\t\t|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
-			case 1:  sprintf(texto, "PC: %05d\t|	CEQ #%05d\t\t|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
-			case 2:  sprintf(texto, "PC: %05d\t|	CNE #%05d\t\t|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
-			case 3:  sprintf(texto, "PC: %05d\t|	CZ #%05d\t\t|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
-			case 4:  sprintf(texto, "PC: %05d\t|	CNZ #%05d\t\t|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
-			case 5:  sprintf(texto, "PC: %05d\t|	CC #%05d\t\t|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
-			case 6:  sprintf(texto, "PC: %05d\t|	CNC #%05d\t\t|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
-			case 7:  sprintf(texto, "PC: %05d\t|	CGR #%05d\t\t|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
-			case 8:  sprintf(texto, "PC: %05d\t|	CLE #%05d\t\t|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
-			case 9:  sprintf(texto, "PC: %05d\t|	CEG #%05d\t\t|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
-			case 10: sprintf(texto, "PC: %05d\t|	CEL #%05d\t\t|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1));	break;
-			case 11: sprintf(texto, "PC: %05d\t|	COV #%05d\t\t|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1));	break;
-			case 12: sprintf(texto, "PC: %05d\t|	CNO #%05d\t\t|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1));	break;
-			case 13: sprintf(texto, "PC: %05d\t|	CDZ #%05d\t\t|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1));	break;
-			case 14: sprintf(texto, "PC: %05d\t|	CN #%05d\t\t|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1));	break;
-			default: printf("Erro. Linha inesperada show_program"); break;
-		}
-		break;
-
-    case RTS:  sprintf(texto, "PC: %05d\t|	RTS				|	SP++; PC <- MEM[%d]; PC++", pc, sp); break;
-
-    case ADD:  sprintf(texto, "PC: %05d\t|	ADD R%d, R%d, R%d		|	R%d <- R%d + R%d", 		pc, _rx, _ry, _rz, _rx, _ry, _rz); break;
-    case SUB:  sprintf(texto, "PC: %05d\t|	SUB R%d, R%d, R%d		|	R%d <- R%d - R%d", 		pc, _rx, _ry, _rz, _rx, _ry, _rz); break;
-    case MULT: sprintf(texto, "PC: %05d\t|	MULT R%d, R%d, R%d		|	R%d <- R%d * R%d", 	pc, _rx, _ry, _rz, _rx, _ry, _rz); break;
-    case DIV:  sprintf(texto, "PC: %05d\t|	DIV R%d, R%d, R%d		|	R%d <- R%d / R%d", 		pc, _rx, _ry, _rz, _rx, _ry, _rz); break;
-    case LMOD: sprintf(texto, "PC: %05d\t|	MOD R%d, R%d, R%d		|	R%d <- R%d %% R%d", 	pc, _rx, _ry, _rz, _rx, _ry, _rz); break;
-    case INC:
-    	if(!model->pega_pedaco(ir,6,6)) { // Inc Rx
-			sprintf(texto, "PC: %05d\t|	INC R%d				|	R%d <- R%d + 1", pc, _rx, _rx, _rx); 
-			break; 
-		}
-		sprintf(texto, "PC: %05d\t|	DEC R%d				|	R%d <- R%d - 1", pc, _rx, _rx, _rx);// Dec Rx
-        break;
-
-    case SHIFT:     // Nao tive paciencia de fazer diferente para cada SHIFT/ROT
-			switch(model->pega_pedaco(ir,6,4)) {
-				case 0: sprintf(texto, "PC: %05d\t|	SHIFTL0 R%d, #%02d		|	R%d <-'0'  << %d", pc, _rx, model->pega_pedaco(ir,3,0), _rx, model->pega_pedaco(ir,3,0)); break;
-				case 1: sprintf(texto, "PC: %05d\t|	SHIFTL1 R%d, #%02d		|	R%d <-'1'  << %d", pc, _rx, model->pega_pedaco(ir,3,0), _rx, model->pega_pedaco(ir,3,0));	break;
-				case 2: sprintf(texto, "PC: %05d\t|	SHIFTR0 R%d, #%02d		|	'0'-> R%d   >> %d", pc, _rx, model->pega_pedaco(ir,3,0), _rx, model->pega_pedaco(ir,3,0));break;
-				case 3: sprintf(texto, "PC: %05d\t|	SHIFTR1 R%d, #%02d		|	'1'-> R%d   >> %d", pc, _rx, model->pega_pedaco(ir,3,0), _rx, model->pega_pedaco(ir,3,0));break;
-				default:
-        			if(model->pega_pedaco(ir,6,5) == 2) { // ROTATE LEFT
-    					sprintf(texto, "PC: %05d\t|	ROTL R%d, #%02d	|	R%d <- R%d   << %d", pc, _rx, model->pega_pedaco(ir,3,0), _rx,_rx, model->pega_pedaco(ir,3,0)); 
-						break; 
-					}
-					sprintf(texto, "PC: %05d\t|	ROTR R%d, #%02d	|	R%d -> R%d   >> %d", pc, _rx, model->pega_pedaco(ir,3,0), _rx,_rx, model->pega_pedaco(ir,3,0)); break;
+  	switch(model->pega_pedaco(ir,15,10)) {
+		case INCHAR: 	sprintf(texto,"PC: %05d\t|	INCHAR R%d			|	R%d        <- teclado", 			pc, _rx, _rx);	break;
+		case OUTCHAR:	sprintf(texto,"PC: %05d\t|	OUTCHAR R%d, R%d\t	|	video[R%d] <- char[R%d]", pc, _rx, _ry, _rx, _ry);	break;
+		case MOV:
+			switch(model->pega_pedaco(ir,1,0)) {
+				case 0: sprintf(texto,"PC: %05d\t|	MOV R%d, R%d		|	R%d <- R%d", 	pc, _rx, _ry, _rx, _ry); 	break;
+				case 1: sprintf(texto,"PC: %05d\t|	MOV R%d, SP			|	R%d <- SP", 	pc, _rx, _rx); 				break;
+				default:sprintf(texto,"PC: %05d\t|	MOV SP, R%d			|	SP  <- R%d", 	pc, _rx, _rx);				break;
 			}
 			break;
 
-    case SETC:   sprintf(texto, "PC: %05d\t|	SETC				|	C <- %d", pc, model->pega_pedaco(ir,9,9)); break;
+		case STORE:		sprintf(texto,"PC: %05d\t|	STORE %05d, R%d\t	|	MEM[%d] <- R%d", 	pc, model->getMem(pc+1), _rx, model->getMem(pc+1), _rx); break;
+		case STOREINDEX:sprintf(texto,"PC: %05d\t|	STOREI R%d, R%d\t	|	MEM[R%d] <- R%d",	pc, _rx, _ry, _rx, _ry);			break;
+		case LOAD: 		sprintf(texto,"PC: %05d\t|	LOAD R%d, %05d		|	R%d <- MEM[%d]", 	pc, _rx, model->getMem(pc+1), _rx, model->getMem(pc+1)); 	break;
+		case LOADIMED: 	sprintf(texto,"PC: %05d\t|	LOADN R%d, #%05d\t	|	R%d <- #%d", 		pc, _rx, model->getMem(pc+1), _rx, model->getMem(pc+1)); 	break;
+		case LOADINDEX:	sprintf(texto,"PC: %05d\t|	LOADI R%d, R%d\t\t	|	R%d <- MEM[R%d]",	pc, _rx, _ry, _rx, _ry); 			break;
 
-    case HALT:   sprintf(texto, "PC: %05d\t|	HALT				|	Pausa a execucao", pc); break;
+		case LAND:		sprintf(texto,"PC: %05d\t|	AND R%d, R%d, R%d	|	R%d <- R%d and R%d",pc, _rx, _ry, _rz, _rx, _ry, _rz);	break;
+		case LOR:	 	sprintf(texto,"PC: %05d\t|	OR R%d, R%d, R%d	|	R%d <- R%d or R%d", pc, _rx, _ry, _rz, _rx, _ry, _rz); 	break;
+		case LXOR: 		sprintf(texto,"PC: %05d\t|	XOR R%d, R%d, R%d	|	R%d <- R%d xor R%d",pc, _rx, _ry, _rz, _rx, _ry, _rz);  break;
+		case LNOT: 		sprintf(texto,"PC: %05d\t|	NOT R%d, R%d		|	R%d <- R%d", 		pc, _rx, _ry, _rx, _ry); 			break;
 
-    case NOP:	 sprintf(texto, "PC: %05d\t|	NOOP				|	Do nothing", pc); break;
+		case CMP:		sprintf(texto,"PC: %05d\t|	CMP R%d, R%d\t		|	FR <- <eq|le|gr>", 		pc, _rx, _ry); break;
 
-    case BREAKP: sprintf(texto, "PC: %05d\t|	BREAKP #%05d		|	Break Point", pc, model->pega_pedaco(ir,9,0)); break;
+		case JMP:
+			switch(model->pega_pedaco(ir,9,6)) {
+				case 0:	sprintf(texto,"PC: %05d\t|	JMP #%05d 			|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
+				case 1:	sprintf(texto,"PC: %05d\t|	JEQ #%05d 			|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
+				case 2:	sprintf(texto,"PC: %05d\t|	JNE #%05d 			|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
+				case 3: sprintf(texto,"PC: %05d\t|	JZ  #%05d			|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
+				case 4: sprintf(texto,"PC: %05d\t|	JNZ #%05d		 	|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
+				case 5: sprintf(texto,"PC: %05d\t|	JC  #%05d			|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
+				case 6: sprintf(texto,"PC: %05d\t|	JNC #%05d	 		|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
+				case 7: sprintf(texto,"PC: %05d\t|	JGR #%05d		 	|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
+				case 8: sprintf(texto,"PC: %05d\t|	JLE #%05d 			|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
+				case 9: sprintf(texto,"PC: %05d\t|	JEG #%05d 			|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
+				case 10:sprintf(texto,"PC: %05d\t|	JEL #%05d		 	|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
+				case 11:sprintf(texto,"PC: %05d\t|	JOV #%05d 			|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
+				case 12:sprintf(texto,"PC: %05d\t|	JNO #%05d 			|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
+				case 13:sprintf(texto,"PC: %05d\t|	JDZ #%05d 			|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
+				case 14:sprintf(texto,"PC: %05d\t|	JN  #%05d			|	PC <- #%05d", pc, model->getMem(pc+1), model->getMem(pc+1)); break;
+				default:printf("Erro. Instrucao inesperada em show_program"); break;
+			}
+			break;
 
-	default: 
-		cout << "ERRO - show program linha: " << linha << " pc " << pc << endl;
-		break;
-  }
+		case PUSH:
+			if(!model->pega_pedaco(ir,6,6)) {// Registrador
+						sprintf(texto,"PC: %05d\t|	PUSH R%d\t			|	MEM[%d] <- R%d]", pc, _rx, sp, _rx); 
+				break; 
+			}
+						sprintf(texto,"PC: %05d\t|	PUSH FR\t			|	MEM[%d] <- FR]", pc, sp); // FR
+			break;
+
+		case POP:
+			if(!model->pega_pedaco(ir,6,6)) { // Registrador
+						sprintf(texto,"PC: %05d\t|	POP R%d				|	R%d <- MEM[%d]", pc, _rx, _rx, sp); 
+				break; 
+			}
+						sprintf(texto,"PC: %05d\t|	POP FR				|	FR <- MEM[%d]", pc, sp); // FR
+			break;
+
+		case CALL:
+			switch(model->pega_pedaco(ir,9,6)) {
+				case 0: sprintf(texto,"PC: %05d\t|	CALL #%05d\t		|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
+				case 1: sprintf(texto,"PC: %05d\t|	CEQ #%05d			|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
+				case 2: sprintf(texto,"PC: %05d\t|	CNE #%05d			|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
+				case 3: sprintf(texto,"PC: %05d\t|	CZ #%05d			|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
+				case 4: sprintf(texto,"PC: %05d\t|	CNZ #%05d			|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
+				case 5: sprintf(texto,"PC: %05d\t|	CC #%05d			|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
+				case 6: sprintf(texto,"PC: %05d\t|	CNC #%05d			|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
+				case 7: sprintf(texto,"PC: %05d\t|	CGR #%05d			|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
+				case 8: sprintf(texto,"PC: %05d\t|	CLE #%05d			|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
+				case 9: sprintf(texto,"PC: %05d\t|	CEG #%05d			|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1)); break;
+				case 10:sprintf(texto,"PC: %05d\t|	CEL #%05d			|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1));	break;
+				case 11:sprintf(texto,"PC: %05d\t|	COV #%05d			|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1));	break;
+				case 12:sprintf(texto,"PC: %05d\t|	CNO #%05d			|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1));	break;
+				case 13:sprintf(texto,"PC: %05d\t|	CDZ #%05d			|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1));	break;
+				case 14:sprintf(texto,"PC: %05d\t|	CN #%05d			|	M[%d]<-PC; SP--; PC<-#%05d", pc, model->getMem(pc+1), sp, model->getMem(pc+1));	break;
+				default:printf("Erro. Linha inesperada show_program"); break;
+			}
+			break;
+
+		case RTS:		sprintf(texto,"PC: %05d\t|	RTS					|	SP++; PC <- MEM[%d]; PC++", pc, sp); break;
+		case ADD:		sprintf(texto,"PC: %05d\t|	ADD R%d, R%d, R%d\t	|	R%d <- R%d + R%d", 	pc, _rx, _ry, _rz, _rx, _ry, _rz);	break;
+		case SUB:		sprintf(texto,"PC: %05d\t|	SUB R%d, R%d, R%d\t	|	R%d <- R%d - R%d", 	pc, _rx, _ry, _rz, _rx, _ry, _rz);	break;
+		case MULT:		sprintf(texto,"PC: %05d\t|	MULT R%d, R%d, R%d\t\t|	R%d <- R%d * R%d", 	pc, _rx, _ry, _rz, _rx, _ry, _rz);	break;
+		case DIV:		sprintf(texto,"PC: %05d\t|	DIV R%d, R%d, R%d\t	|	R%d <- R%d / R%d", 	pc, _rx, _ry, _rz, _rx, _ry, _rz);	break;
+		case LMOD:		sprintf(texto,"PC: %05d\t|	MOD R%d, R%d, R%d\t	|	R%d <- R%d %% R%d", pc, _rx, _ry, _rz, _rx, _ry, _rz);	break;
+		case INC:
+			if(!model->pega_pedaco(ir,6,6)) { // Inc Rx
+						sprintf(texto,"PC: %05d\t|	INC R%d				|	R%d <- R%d + 1", pc, _rx, _rx, _rx); 
+				break; 
+			}
+						sprintf(texto,"PC: %05d\t|	DEC R%d				|	R%d <- R%d - 1", pc, _rx, _rx, _rx);// Dec Rx
+			break;
+
+		case SHIFT:     // Nao tive paciencia de fazer diferente para cada SHIFT/ROT
+			switch(model->pega_pedaco(ir,6,4)) {
+				case 0:	sprintf(texto,"PC: %05d\t|	SHIFTL0 R%d, #%02d\t\t|	R%d <-'0'  << %d", pc, _rx, model->pega_pedaco(ir,3,0), _rx, model->pega_pedaco(ir,3,0)); break;
+				case 1: sprintf(texto,"PC: %05d\t|	SHIFTL1 R%d, #%02d\t\t|	R%d <-'1'  << %d", pc, _rx, model->pega_pedaco(ir,3,0), _rx, model->pega_pedaco(ir,3,0));	break;
+				case 2: sprintf(texto,"PC: %05d\t|	SHIFTR0 R%d, #%02d\t\t|	'0'-> R%d   >> %d", pc, _rx, model->pega_pedaco(ir,3,0), _rx, model->pega_pedaco(ir,3,0));break;
+				case 3: sprintf(texto,"PC: %05d\t|	SHIFTR1 R%d, #%02d\t\t|	'1'-> R%d   >> %d", pc, _rx, model->pega_pedaco(ir,3,0), _rx, model->pega_pedaco(ir,3,0));break;
+				default:
+        			if(model->pega_pedaco(ir,6,5) == 2) { // ROTATE LEFT
+    					sprintf(texto,"PC: %05d\t|	ROTL R%d, #%02d		|	R%d <- R%d   << %d", pc, _rx, model->pega_pedaco(ir,3,0), _rx,_rx, model->pega_pedaco(ir,3,0)); 
+						break; 
+					}
+						sprintf(texto,"PC: %05d\t|	ROTR R%d, #%02d		|	R%d -> R%d   >> %d", pc, _rx, model->pega_pedaco(ir,3,0), _rx,_rx, model->pega_pedaco(ir,3,0)); break;
+			}
+			break;
+
+		case SETC:   	sprintf(texto,"PC: %05d\t|	SETC				|	C <- %d", pc, model->pega_pedaco(ir,9,9)); break;
+
+		case HALT:   	sprintf(texto,"PC: %05d\t|	HALT				|	Pausa a execucao", pc); break;
+
+		case NOP:	 	sprintf(texto,"PC: %05d\t|	NOOP				|	Do nothing", pc); break;
+
+		case BREAKP: 	sprintf(texto,"PC: %05d\t|	BREAKP #%05d		|	Break Point", pc, model->pega_pedaco(ir,9,0)); break;
+
+		default: 
+			cout << "ERRO - show program linha: " << linha << " pc " << pc << endl;
+			break;
+	}
 
 	escrever_na_tela(texto, linha, 1);
 }
@@ -527,14 +521,13 @@ void View::criarAreaTexto(GtkWidget *hbox) {
 	gtk_widget_set_size_request(textview, 374, 487);
 	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
 
-	for(int i = N_LINHAS + 3; i--; ) {
+	for(int i = N_LINHAS + 4; i--; ) {
 		buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (textview));
 		mark = gtk_text_buffer_get_insert(buffer);
 		gtk_text_buffer_get_iter_at_mark(buffer, &iter, mark);
 		gtk_text_buffer_insert(buffer, &iter, "\n \0", -1);
 	}
 	gtk_text_buffer_create_tag(buffer, "Fonte", "scale", PANGO_SCALE_SMALL, NULL );
-	gtk_text_buffer_create_tag(buffer, "Fonte2", "scale", PANGO_SCALE_MEDIUM, NULL );
 	escrever_na_tela("Linha		|	Instrução			|	Ação", 0, 1);
 
 	GtkWidget *frameMemoria = gtk_frame_new("Memória");
