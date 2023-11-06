@@ -21,6 +21,10 @@ Controller::Controller(ModelInterface *model) {
 //Controller::~Controller() { delete view; }
 
 void Controller::reset() {
+	model->setProcessamento(false);
+	automatico = false;
+	view->DestravaRegs();
+	
 	model->reset();
 	if(resetVideo) {
 		model->resetVideo();
@@ -151,6 +155,7 @@ void Controller::switchExecucao() {
 
 	model->setProcessamento(false);
 	view->DestravaRegs();
+	model->processa();
 }
 
 void Controller::notifyProcessamento() {

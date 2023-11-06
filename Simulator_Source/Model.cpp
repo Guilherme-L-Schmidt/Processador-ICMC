@@ -20,7 +20,6 @@ void* processaAutomatico(void *data)
 		}
 	}
 	g_thread_exit(g_thread_self());
-	//model->updateAll();
 	
 	return NULL;
 }
@@ -176,15 +175,17 @@ bool Model::getProcessamento() { return automatico; }
 void Model::processa() {
 	if(automatico) {
 		GError *error = NULL;
-		
+
 		if(!(loopThread = g_thread_try_new("graph", processaAutomatico, this, &error))) {
 			g_printerr ("Failed to create YES thread: %s\n", error->message);
 			return;
 		}
-		//updateAll();
 		return;
 	}
-	g_thread_join(loopThread);
+	if(loopThread != NULL) {
+		g_thread_join(loopThread);
+		loopThread = NULL;
+	}
 	processador(); // executa soh uma vez
 	updateAll();
 }
