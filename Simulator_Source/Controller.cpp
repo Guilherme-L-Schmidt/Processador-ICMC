@@ -12,7 +12,7 @@ Controller::Controller(ModelInterface *model) {
 	hex = false;				// comeca decimal
 	automatico = false;	// comeca manual
 	resetVideo = true;	// comeca resetando o video, quando dah reset
-	halt = false;		 
+	halt = false;
 	
 	view = new View(model, this);
 	reset();

@@ -403,20 +403,18 @@ void Model::delay() {
 
 	//g_print("Delay: %d\n", varDelay);
 
-	//clock_t goal = ( varDelay + clock() );
-	//while( goal > clock() );
+	clock_t goal = ( varDelay + clock() );
+	while( goal > clock() );
 }
 
 int Model::getDelay() { return varDelay; }
 
 void Model::setDelay(int valor) {	
-	/*
 	// se igual nao faz nada
-		if(varDelay == valor)
-			return;
+	if(varDelay == valor)
+		return;
 
-		// senao, mata a thread e cria uma nova com o novo valor do delay
-	*/
+	// senao, mata a thread e cria uma nova com o novo valor do delay
 
 	varDelay = valor;
 }
