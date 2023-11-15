@@ -242,7 +242,7 @@ void Model::GravaArquivo(char *nome) {
 	}
 
 	char linha[128];
-	unsigned int i, j = 0, processando = 0, teve_halt = 0;
+	unsigned int i, j = 0, processando = 0;
 
 	while(!feof(stream)) {			 // Le linha por linha ate' o final do arquivo: eof = end of file !!
 		fscanf(stream,"%s", linha);  // Le uma linha inteira ate' o \n
@@ -266,19 +266,11 @@ void Model::GravaArquivo(char *nome) {
 		if(processando && (j < TAMANHO_MEMORIA)) {
 			mem[j] = processa_linha(linha);
 
-			if(pega_pedaco(mem[j],15,10) == 15)
-				teve_halt = 1;
-
 		  	if(mem[j] == -1)
 				printf("Linha invalida (%d): '%s'", j, linha);
 		  	j++;
 		}
 	} // Fim do while (!feof(stream))
-
-	if(!teve_halt) { // lembra ao usuario de colocar halt (leve ao segfault se nao encontrar)
-		printf("lembre de colocar halt!\n");
-	}
-
 
 	fclose(stream);  // Nunca esqueca um arquivo aberto!!
 }
@@ -772,6 +764,10 @@ void Model::processador() {
 	int ir2;
 
 	// ----- Ciclo de Busca: --------
+	if(pc > 32767) {
+		printf("Ultrapassou limite da memoria, coloque um jmp no fim do código\n");
+		exit(1);
+	}
 	ir2 = mem[pc];
 	pc2 = pc + 1;
 	// ----------- -- ---------------
