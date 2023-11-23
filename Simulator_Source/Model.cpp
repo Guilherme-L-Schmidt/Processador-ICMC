@@ -663,11 +663,14 @@ void Model::processador() {
 			FR[9] = 0;
 
 			if(!reg[rx]) // Se resultado = 0, seta o Flag de Zero
-						FR[3] = 1;
+				FR[3] = 1;
 			else
 				if(reg[rx] < 0x0000) {
 					FR[9] = 1;  // Resultado e' Negativo
-					reg[rx] = 0;
+					//reg[rx] = 0;
+				}
+				if(reg[rx] < -0xffff) { // modificado para aceitar numeros negativos
+					reg[rx] += 0xffff;
 				}
 			break;
 
