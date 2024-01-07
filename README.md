@@ -1,3 +1,5 @@
+My branch is modified to add the NEG instuction, implemented in the assembler at the `NovoMontadorLinux/montadorLinux` folder. Additionally, the simulator at the `Simulator_Source` folder implements both the NEG instuction and negative numbers themselves. Further information can be found [here](https://docs.google.com/presentation/d/1ZpFitm5Rg5x_-V1U_FEbJD-YcFEHVJ1rLe6wDI6Jr10/edit#slide=id.p) and [here](https://github.com/Guilherme-L-Schmidt/OrgArqGame).
+
 # Disciplina SSC0119 Prática em Organização de Computadores
 - Por Favor, para as aulas e informações da Disciplina SSC0119 Prática em Organização de Computadores, usar a página da Disciplina em: https://gitlab.com/simoesusp/disciplinas/-/tree/master/SSC0119-Pratica-em-Organizacao-de-Computadores
 
