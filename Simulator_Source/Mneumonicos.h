@@ -19,6 +19,7 @@
 #define DIV	35
 #define INC	36
 #define LMOD 37
+#define NEG 38
 #define LAND 18
 #define LOR 19
 #define LXOR 20

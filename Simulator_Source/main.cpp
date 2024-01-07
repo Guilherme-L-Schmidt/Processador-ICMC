@@ -4,7 +4,13 @@
 
 using namespace std;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{	
+//*
+  // init threads
+  g_thread_init(NULL);
+  gdk_threads_init();
+//*/
 
 	gtk_init(&argc, &argv);
 
@@ -33,7 +39,12 @@ int main(int argc, char *argv[]) {
 	Model *m = new Model(argv[1], argv[2]);
 	Controller *c = new Controller(m);
 
-	gtk_main();
+//*
+  // enter the GTK main loop
+  gdk_threads_enter();
+  gtk_main();
+  gdk_threads_leave();
+//*/
 
 //	delete m;
 //	delete c;

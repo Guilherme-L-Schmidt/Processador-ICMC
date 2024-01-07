@@ -5,36 +5,33 @@
 
 using namespace std;
 
-Controller::Controller(ModelInterface *model) {
-	this->model = model;
+Controller::Controller(ModelInterface *model)
+{	this->model = model;
 	this->model->setController(this);
 
 	hex = false;				// comeca decimal
 	automatico = false;	// comeca manual
 	resetVideo = true;	// comeca resetando o video, quando dah reset
-	halt = false;
+	halt = false;		 
 	
 	view = new View(model, this);
 	reset();
 }
 
-//Controller::~Controller() { delete view; }
+Controller::~Controller()
+{	delete view; }
 
-void Controller::reset() {
-	model->setProcessamento(false);
-	automatico = false;
-	view->DestravaRegs();
-	
-	model->reset();
-	if(resetVideo) {
-		model->resetVideo();
+void Controller::reset()
+{	model->reset();
+	if(resetVideo)
+	{	model->resetVideo();
 		for(int i=1200; i--; )
 			view->updateVideo(i);
 	}
 }
 
-void Controller::AlteraRegistradores(GtkWidget **TextEntryRegs) {
-	int i, j;
+void Controller::AlteraRegistradores(GtkWidget **TextEntryRegs)
+{	int i, j;
 	int aux[8];
 
 	for(i=8; i--; )
@@ -50,16 +47,16 @@ void Controller::AlteraRegistradores(GtkWidget **TextEntryRegs) {
 	model->setRegistrador(aux);
 }
 
-int Controller::charToInt(const char *string) {
-	int i;
+int Controller::charToInt(const char *string)
+{ int i;
 	int tam = strlen(string);
 	int fator = 1;
 	int soma = 0;
 
 	char c;
 
-	for(i=tam; i--; ) {
-		c = string[i];
+	for(i=tam; i--; )
+	{	c = string[i];
 		if('0' <= c && c <= '9')
 			soma += fator * (c - '0');
 		
@@ -80,49 +77,49 @@ int Controller::charToInt(const char *string) {
 	return soma;
 }
 
-bool Controller::userInput(const char *tecla) {
-	key = 255;
+bool Controller::userInput(const char *tecla)
+{	key = 255;
 
-	if( strlen(tecla) > 1) {
-		if(!strcmp(tecla,"End")) {
-			if(automatico == false && halt == false)
+	if( strlen(tecla) > 1)
+	{	if( !strcmp(tecla,"End") )
+		{	if(automatico == false && halt == false)
 				model->processa();
 			return TRUE;
 		}
-		else if(!strcmp(tecla, "Return")) {
-			if(automatico == false)
+		else if( !strcmp(tecla, "Return") )
+		{	if(automatico == false)
 				AlteraRegistradores( view->getRegistradores() );
 			key = 13;
 			return FALSE;
 		}
-		else if(!strcmp(tecla, "Escape")) {
-			view->destroy(NULL, NULL); 
+		else if( !strcmp(tecla, "Escape") )
+		{	view->destroy(NULL, NULL); 
 			return TRUE;
 		}
-		else if(!strcmp(tecla, "Home")) {
-			if(halt == false)
+		else if( !strcmp(tecla, "Home") )
+		{	if(halt == false)
 				switchExecucao();
 			return TRUE;
 		}
-		else if(!strcmp(tecla, "Insert")) {
-			reset();
+		else if( !strcmp(tecla, "Insert") )
+		{	reset();
 			halt = false;
 			return TRUE;
 		}
-		else if(!strcmp(tecla, "Left")) {
-			key = 14;
+		else if( !strcmp(tecla, "Left") )
+		{	key = 14;
 			return FALSE;
 		}
-		else if(!strcmp(tecla, "Right")) {
-			key = 15;
+		else if( !strcmp(tecla, "Right") )
+		{	key = 15;
 			return FALSE;
 		}
-		else if(!strcmp(tecla, "Up")) {
-			key = 16;
+		else if( !strcmp(tecla, "Up") )
+		{	key = 16;
 			return FALSE;
 		}
-		else if(!strcmp(tecla, "Down")) {
-			key = 17;
+		else if( !strcmp(tecla, "Down") )
+		{	key = 17;
 			return FALSE;
 		}
 		
@@ -136,50 +133,51 @@ bool Controller::userInput(const char *tecla) {
 	return FALSE; // TRUE para impedir que o evento continue para os filhos, FALSE para permitir
 }
 
-void Controller::setRegistradorHex(bool valor) {
-	hex = valor;
+void Controller::setRegistradorHex(bool valor)
+{ hex = valor;
 	model->setRegistrador(NULL); // atualiza os registradores
 }
 
-bool Controller::getHex() { return hex; }
+bool Controller::getHex()
+{	return hex; }
 
-void Controller::switchExecucao() {
-	automatico = !automatico;
-	
-	if(automatico) {
-		view->TravaRegs();
+void Controller::switchExecucao()
+{	automatico = 1 - automatico;
+
+	if(automatico)
+	{	view->TravaRegs();
 		model->setProcessamento(true);
 		model->processa();
 		return;
 	}
 
-	model->setProcessamento(false);
-	view->DestravaRegs();
-	model->processa();
-}
-
-void Controller::notifyProcessamento() {
-	automatico = false;
 	view->DestravaRegs();
 	model->setProcessamento(false);
 }
 
-void Controller::pauseProcessamento() {
-	automatico = false;
+void Controller::notifyProcessamento()
+{ automatico = false;
+	view->DestravaRegs();
+	model->setProcessamento(false);
+}
+
+void Controller::pauseProcessamento()
+{	automatico = false;
 	view->DestravaRegs();
 	model->setProcessamento(false);
 	halt = true;	
 }
 
-void Controller::setResetVideo(bool valor) { resetVideo = valor; }
+void Controller::setResetVideo(bool valor)
+{	resetVideo = valor; }
 
-void Controller::setDelay(int valor) {
-	if(valor >= 0)
+void Controller::setDelay(int valor)
+{	if(valor >= 0)
 		model->setDelay(valor);
 }
 
-int Controller::getKey() {
-	int aux = key;
+int Controller::getKey()
+{	int aux = key;
 	key = 255;
 	return aux;
 }

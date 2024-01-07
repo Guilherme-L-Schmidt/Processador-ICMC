@@ -135,7 +135,6 @@ void DetectarLabels(void)
     {
         str_tmp = parser_GetItem_s();
         op_code = BuscaInstrucao(str_tmp);
-
         if (op_code == LABEL_CODE)
         {
             parser_Match(':');

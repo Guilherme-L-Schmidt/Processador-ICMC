@@ -29,14 +29,13 @@ char * NumPBinString4(short);
 
 void Montar(void)
 {
-    parser_Init();
     parser_Message("Encontrando labels...");
     AdicionarLabelsFixos();
     DetectarLabels();
     parser_Message("Montando codigo...");
     parser_Write("-- Codigo gerado pelo montador");
     parser_Write("WIDTH=16;");
-    parser_Write("DEPTH=65536;"); /* Tamanho da memoria aqui. */
+    parser_Write("DEPTH=32768;"); /* Tamanho da memoria aqui. */
     parser_Write("ADDRESS_RADIX=UNS;");
     parser_Write("DATA_RADIX=BIN;");
     parser_Write("CONTENT BEGIN");
@@ -86,6 +85,7 @@ void AdicionarLabelsFixos(void)
 void DetectarLabels(void)
 {
 
+    parser_Init();
     char * str_tmp;
     char * str_tmp1;
     char str_msg[STRTAM];
@@ -204,7 +204,7 @@ void DetectarLabels(void)
             case SUBC_CODE :
             case MUL_CODE :
             case DIV_CODE :
-	        case LMOD_CODE :	    
+	    case LMOD_CODE :	    
             case AND_CODE :
             case OR_CODE :
             case XOR_CODE :
@@ -219,7 +219,6 @@ void DetectarLabels(void)
             case NEG_CODE :
 	        case MOV_CODE :
             case OUTCHAR_CODE :
-            case SOUND_CODE :
             case CMP_CODE :
                 parser_SkipUntil(',');
                 parser_SkipUntilEnd();
@@ -240,9 +239,8 @@ void DetectarLabels(void)
             case JEL_CODE :
             case JO_CODE :
             case JNO_CODE :
-	        case JDZ_CODE :
-	        case JN_CODE :
-            case JSR_CODE :
+	    case JDZ_CODE :
+	    case JN_CODE :
             case CALL_CODE :
             case CEQ_CODE :
             case CNE_CODE :
@@ -256,8 +254,8 @@ void DetectarLabels(void)
             case CEL_CODE :
             case CO_CODE :
             case CNO_CODE :
-	        case CDZ_CODE :
-	        case CN_CODE :
+	    case CDZ_CODE :
+	    case CN_CODE :
                 parser_SkipUntilEnd();
                 end_cnt+=2;
                 break;
@@ -266,8 +264,6 @@ void DetectarLabels(void)
             case INCHAR_CODE :
             case INC_CODE :
             case DEC_CODE :
-            case SERIALRX_CODE :
-            case SERIALTX_CODE :
 /*            case NOT_CODE :  */
             case SHIFTL0_CODE :
             case SHIFTL1_CODE :
@@ -275,6 +271,19 @@ void DetectarLabels(void)
             case SHIFTR1_CODE :
             case ROTL_CODE :
             case ROTR_CODE :
+            case SET_CODE :
+            case SEQ_CODE :
+            case SNE_CODE :
+            case SZ_CODE :
+            case SNZ_CODE :
+            case SC_CODE :
+            case SNC_CODE :
+            case SGT_CODE :
+            case SLT_CODE :
+            case SEG_CODE :
+            case SEL_CODE :
+            case SO_CODE :
+            case SNO_CODE :
             case PUSH_CODE :
             case POP_CODE :
             case CALLR_CODE :
@@ -600,35 +609,6 @@ void MontarInstrucoes(void)
                     break;
 
                 /* ==============
-	                SOUND Rx, Ry, Rz
-                   ==============
-                */
-
-                case SOUND_CODE :
-                    str_tmp1 = parser_GetItem_s();
-                    val1 = BuscaRegistrador(str_tmp1);
-                    free(str_tmp1);
-                    parser_Match(',');
-                    str_tmp2 = parser_GetItem_s();
-                    val2 = BuscaRegistrador(str_tmp2);
-                    free(str_tmp2);
-                    parser_Match(',');
-                    str_tmp3 = parser_GetItem_s();
-                    val3 = BuscaRegistrador(str_tmp3);
-                    free(str_tmp3);
-                    str_tmp1 = ConverteRegistrador(val1);
-                    str_tmp2 = ConverteRegistrador(val2);
-                    str_tmp3 = ConverteRegistrador(val3);
-                    sprintf(str_msg,"%s%s%s%s0",SOUND,str_tmp1,str_tmp2,str_tmp3);
-                    free(str_tmp1);
-                    free(str_tmp2);
-                    free(str_tmp3);
-                    parser_Write_Inst(str_msg,end_cnt);
-                    end_cnt += 1;
-                    break;
-
-
-                /* ==============
                    Add Rx, Ry, Rz
                    ==============
                 */
@@ -829,38 +809,6 @@ void MontarInstrucoes(void)
                     parser_Write_Inst(str_msg,end_cnt);
                     end_cnt += 1;
                     break;
-
-                /* ==============
-                   Serial Tx
-                   ==============
-                */
-
-                case SERIALTX_CODE :
-                    str_tmp1 = parser_GetItem_s();
-                    val1 = BuscaRegistrador(str_tmp1);
-                    free(str_tmp1);
-                    str_tmp1 = ConverteRegistrador(val1);
-                    sprintf(str_msg,"%s%s0000000",SERIALTX,str_tmp1);
-                    free(str_tmp1);
-                    parser_Write_Inst(str_msg,end_cnt);
-                    end_cnt += 1;
-                    break;
-                
-                /*  ==============
-                    Serial Rx
-                    ==============
-                */
-
-                case SERIALRX_CODE :
-                    str_tmp1 = parser_GetItem_s();
-                    val1 = BuscaRegistrador(str_tmp1);
-                    free(str_tmp1);
-                    str_tmp1 = ConverteRegistrador(val1);
-                    sprintf(str_msg,"%s%s0000000",SERIALRX,str_tmp1);
-                    free(str_tmp1);
-                    parser_Write_Inst(str_msg,end_cnt);
-                    end_cnt += 1;
-                    break;
                     
                 /* ==============
                    And Rx, Ry, Rz
@@ -994,7 +942,7 @@ void MontarInstrucoes(void)
                     free(str_tmp2);
                     parser_Write_Inst(str_msg,end_cnt);
                     end_cnt += 1;
-                    break;                    
+                    break;
 
                 /* ==============
                    Neg Rx Ry
@@ -1016,9 +964,14 @@ void MontarInstrucoes(void)
                     free(str_tmp2);
                     parser_Write_Inst(str_msg,end_cnt);
                     end_cnt += 1;
-                    break;   
+                    break;                  
 
                 /* ==============
+   
+   
+   
+   
+   
                 Shiftl0 Rx, #n
                    ==============
                 */
@@ -1518,23 +1471,6 @@ void MontarInstrucoes(void)
                     free(str_tmp1);
                     break;
 
-                /* ==============
-                   JSR End
-                   ==============
-                */
-                
-                case JSR_CODE :
-                    val1 = RecebeEndereco();
-                    str_tmp1 = NumPBinString(val1);
-                    sprintf(str_msg,"%s%s000000",JMP,COND_SR);
-                    parser_Write_Inst(str_msg,end_cnt);
-                    end_cnt += 1;
-                    sprintf(str_msg,"%s",str_tmp1);
-                    parser_Write_Inst(str_msg,end_cnt);
-                    end_cnt +=1;
-                    free(str_tmp1);
-                    break;
-
                 /* ==============		
                    Call End
                    ==============
@@ -1790,6 +1726,213 @@ void MontarInstrucoes(void)
                     free(str_tmp1);
                     break;
                     
+                /* ==============		
+                   Set Rz
+                   ==============
+                */
+                
+                case SET_CODE :
+                    str_tmp1 = parser_GetItem_s();
+                    val1 = BuscaRegistrador(str_tmp1);
+                    free(str_tmp1);
+                    str_tmp1 = ConverteRegistrador(val1);
+                    sprintf(str_msg,"%s%s00%s0",SET,NO_COND,str_tmp1);
+                    free(str_tmp1);
+                    parser_Write_Inst(str_msg,end_cnt);
+                    end_cnt += 1;
+                    break;
+                    
+                /* ==============
+                   Seq Rz
+                   ==============
+                */
+                
+                case SEQ_CODE :
+                    str_tmp1 = parser_GetItem_s();
+                    val1 = BuscaRegistrador(str_tmp1);
+                    free(str_tmp1);
+                    str_tmp1 = ConverteRegistrador(val1);
+                    sprintf(str_msg,"%s%s00%s0",SET,COND_EQ,str_tmp1);
+                    free(str_tmp1);
+                    parser_Write_Inst(str_msg,end_cnt);
+                    end_cnt += 1;
+                    break;
+                    
+                /* ==============
+                   Sne Rz
+                   ==============
+                */
+                
+                case SNE_CODE :
+                    str_tmp1 = parser_GetItem_s();
+                    val1 = BuscaRegistrador(str_tmp1);
+                    free(str_tmp1);
+                    str_tmp1 = ConverteRegistrador(val1);
+                    sprintf(str_msg,"%s%s00%s0",SET,COND_NE,str_tmp1);
+                    free(str_tmp1);
+                    parser_Write_Inst(str_msg,end_cnt);
+                    end_cnt += 1;
+                    break;
+                    
+                /* ==============
+                   Sz Rz
+                   ==============
+                */
+                
+                case SZ_CODE :
+                    str_tmp1 = parser_GetItem_s();
+                    val1 = BuscaRegistrador(str_tmp1);
+                    free(str_tmp1);
+                    str_tmp1 = ConverteRegistrador(val1);
+                    sprintf(str_msg,"%s%s00%s0",SET,COND_Z,str_tmp1);
+                    free(str_tmp1);
+                    parser_Write_Inst(str_msg,end_cnt);
+                    end_cnt += 1;
+                    break;
+                    
+                /* ==============
+                   Snz Rz
+                   ==============
+                */
+                
+                case SNZ_CODE :
+                    str_tmp1 = parser_GetItem_s();
+                    val1 = BuscaRegistrador(str_tmp1);
+                    free(str_tmp1);
+                    str_tmp1 = ConverteRegistrador(val1);
+                    sprintf(str_msg,"%s%s00%s0",SET,COND_NZ,str_tmp1);
+                    free(str_tmp1);
+                    parser_Write_Inst(str_msg,end_cnt);
+                    end_cnt += 1;
+                    break;
+                
+                /* ==============
+                   Sc Rz
+                   ==============
+                */
+                
+                case SC_CODE :
+                    str_tmp1 = parser_GetItem_s();
+                    val1 = BuscaRegistrador(str_tmp1);
+                    free(str_tmp1);
+                    str_tmp1 = ConverteRegistrador(val1);
+                    sprintf(str_msg,"%s%s00%s0",SET,COND_C,str_tmp1);
+                    free(str_tmp1);
+                    parser_Write_Inst(str_msg,end_cnt);
+                    end_cnt += 1;
+                    break;
+                    
+                /* ==============
+                   Snc Rz
+                   ==============
+                */
+                
+                case SNC_CODE :
+                    str_tmp1 = parser_GetItem_s();
+                    val1 = BuscaRegistrador(str_tmp1);
+                    free(str_tmp1);
+                    str_tmp1 = ConverteRegistrador(val1);
+                    sprintf(str_msg,"%s%s00%s0",SET,COND_NC,str_tmp1);
+                    free(str_tmp1);
+                    parser_Write_Inst(str_msg,end_cnt);
+                    end_cnt += 1;
+                    break;
+                
+                /* ==============
+                   Sgt Rz
+                   ==============
+                */
+                
+                case SGT_CODE :
+                    str_tmp1 = parser_GetItem_s();
+                    val1 = BuscaRegistrador(str_tmp1);
+                    free(str_tmp1);
+                    str_tmp1 = ConverteRegistrador(val1);
+                    sprintf(str_msg,"%s%s00%s0",SET,COND_GT,str_tmp1);
+                    free(str_tmp1);
+                    parser_Write_Inst(str_msg,end_cnt);
+                    end_cnt += 1;
+                    break;
+                
+                /* ==============
+                   Slt Rz
+                   ==============
+                */
+                
+                case SLT_CODE :
+                    str_tmp1 = parser_GetItem_s();
+                    val1 = BuscaRegistrador(str_tmp1);
+                    free(str_tmp1);
+                    str_tmp1 = ConverteRegistrador(val1);
+                    sprintf(str_msg,"%s%s00%s0",SET,COND_LT,str_tmp1);
+                    free(str_tmp1);
+                    parser_Write_Inst(str_msg,end_cnt);
+                    end_cnt += 1;
+                    break;
+                
+                /* ==============
+                   Seg Rz
+                   ==============
+                */
+                
+                case SEG_CODE :
+                    str_tmp1 = parser_GetItem_s();
+                    val1 = BuscaRegistrador(str_tmp1);
+                    free(str_tmp1);
+                    str_tmp1 = ConverteRegistrador(val1);
+                    sprintf(str_msg,"%s%s00%s0",SET,COND_EG,str_tmp1);
+                    free(str_tmp1);
+                    parser_Write_Inst(str_msg,end_cnt);
+                    end_cnt += 1;
+                    break;
+                    
+                /* ==============
+                   Sel Rz
+                   ==============
+                */
+                
+                case SEL_CODE :
+                    str_tmp1 = parser_GetItem_s();
+                    val1 = BuscaRegistrador(str_tmp1);
+                    free(str_tmp1);
+                    str_tmp1 = ConverteRegistrador(val1);
+                    sprintf(str_msg,"%s%s00%s0",SET,COND_EL,str_tmp1);
+                    free(str_tmp1);
+                    parser_Write_Inst(str_msg,end_cnt);
+                    end_cnt += 1;
+                    break;
+                    
+                /* ==============
+                   So Rz
+                   ==============
+                */
+                
+                case SO_CODE :
+                    str_tmp1 = parser_GetItem_s();
+                    val1 = BuscaRegistrador(str_tmp1);
+                    free(str_tmp1);
+                    str_tmp1 = ConverteRegistrador(val1);
+                    sprintf(str_msg,"%s%s00%s0",SET,COND_O,str_tmp1);
+                    free(str_tmp1);
+                    parser_Write_Inst(str_msg,end_cnt);
+                    end_cnt += 1;
+                    break;
+                
+                /* ==============
+                   Sno Rz
+                   ==============
+                */
+                
+                case SNO_CODE :
+                    str_tmp1 = parser_GetItem_s();
+                    val1 = BuscaRegistrador(str_tmp1);
+                    free(str_tmp1);
+                    str_tmp1 = ConverteRegistrador(val1);
+                    sprintf(str_msg,"%s%s00%s0",SET,COND_NO,str_tmp1);
+                    free(str_tmp1);
+                    parser_Write_Inst(str_msg,end_cnt);
+                    end_cnt += 1;
+                    break;
                 
                 /* ==============
                    Rts
@@ -1822,7 +1965,6 @@ void MontarInstrucoes(void)
                     str_tmp1 = parser_GetItem_s();
                     val1 = BuscaRegistrador(str_tmp1);
                     free(str_tmp1);
-                
 		    
 		    if(val1 == FR_CODE)
 			sprintf(str_msg,"%s0001000000",PUSH);
@@ -2110,10 +2252,6 @@ int BuscaInstrucao(char * nome)
     {
         return OUTCHAR_CODE;
     }
-    else if (strcmp(str_tmp,SOUND_STR) == 0)
-    {
-        return SOUND_CODE;
-    }
     else if (strcmp(str_tmp,ADD_STR) == 0)
     {
         return ADD_CODE;
@@ -2145,14 +2283,6 @@ int BuscaInstrucao(char * nome)
     else if (strcmp(str_tmp,DEC_STR) == 0)
     {
         return DEC_CODE;
-    }
-    else if (strcmp(str_tmp, SERIALRX_STR) == 0)
-    {
-        return SERIALRX_CODE;
-    }
-    else if (strcmp(str_tmp, SERIALTX_STR) == 0)
-    {
-        return SERIALTX_CODE;
     }
     else if (strcmp(str_tmp,LMOD_STR) == 0)
     {
@@ -2378,6 +2508,58 @@ int BuscaInstrucao(char * nome)
     {
         return CDZ_CODE;
     }
+    else if (strcmp(str_tmp,SET_STR) == 0)
+    {
+        return SET_CODE;
+    }
+    else if (strcmp(str_tmp,SEQ_STR) == 0)
+    {
+        return SEQ_CODE;
+    }
+    else if (strcmp(str_tmp,SNE_STR) == 0)
+    {
+        return SNE_CODE;
+    }
+    else if (strcmp(str_tmp,SZ_STR) == 0)
+    {
+        return SZ_CODE;
+    }
+    else if (strcmp(str_tmp,SNZ_STR) == 0)
+    {
+        return SNZ_CODE;
+    }
+    else if (strcmp(str_tmp,SC_STR) == 0)
+    {
+        return SC_CODE;
+    }
+    else if (strcmp(str_tmp,SNC_STR) == 0)
+    {
+        return SNC_CODE;
+    }
+    else if (strcmp(str_tmp,SGT_STR) == 0)
+    {
+        return SGT_CODE;
+    }
+    else if (strcmp(str_tmp,SLT_STR) == 0)
+    {
+        return SLT_CODE;
+    }
+    else if (strcmp(str_tmp,SEG_STR) == 0)
+    {
+        return SEG_CODE;
+    }
+    else if (strcmp(str_tmp,SEL_STR) == 0)
+    {
+        return SEL_CODE;
+    }
+    else if (strcmp(str_tmp,SO_STR) == 0)
+    {
+        return SO_CODE;
+    }
+    else if (strcmp(str_tmp,SNO_STR) == 0)
+    {
+        return SNO_CODE;
+    }
     else if (strcmp(str_tmp,RTS_STR) == 0)
     {
         return RTS_CODE;
@@ -2421,10 +2603,6 @@ int BuscaInstrucao(char * nome)
     else if (strcmp(str_tmp,NOP_STR) == 0)
     {
         return NOP_CODE;
-    }
-    else if (strcmp(str_tmp,JSR_STR) == 0)
-    {
-        return JSR_CODE;
     }
 
     /* Pseudo-instrucoes */
@@ -2694,4 +2872,3 @@ unsigned short RecebeEndereco(void)
     }
     return 0;
 }
-
